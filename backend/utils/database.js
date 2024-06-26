@@ -1,17 +1,23 @@
 const mongodb = require('mongodb')
 const MongoClient = mongodb.MongoClient
 
+let _db
+
 const mongoConnect = async (callback) =>{
     try {
         const client = await MongoClient.connect(process.env.MONGO_DB)
-        const callbackExecuter = (client) =>{
-            console.log('Connected')
-            callback(client)
-        }
-        callbackExecuter(client)
+        console.log('Connected')
+        _db = client.db()
     } catch (error) {
         console.log(error)
     }
 }
 
-module.exports = mongoConnect
+const getDb = () =>{
+    if(_db){
+        return _db
+    }
+    throw 'No database found'
+}
+
+module.exports = {mongoConnect, getDb}

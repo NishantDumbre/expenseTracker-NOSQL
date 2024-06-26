@@ -13,7 +13,7 @@ const app = express()
 
 
 // const routes = require('./backend/routes/routes')
-const mongoClient = require('./backend/utils/database')
+const { mongoConnect } = require('./backend/utils/database')
 // const user = require('./backend/models/userModel')
 // const expenses = require('./backend/models/expensesModel')
 // const orders = require('./backend/models/ordersModel')
@@ -47,7 +47,6 @@ app.use(bodyParser.json({ extended: false }));
 
 
 
-mongoClient((client) =>{
+mongoConnect(() => {
     app.listen(8080)
-    console.log(client)
 })

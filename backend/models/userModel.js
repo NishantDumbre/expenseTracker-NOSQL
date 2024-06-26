@@ -1,7 +1,7 @@
-const sequelize = require('../utils/database')
-const Sequelize = require('sequelize')
+const { getDb } = require('../utils/database')
+const uuidv4 = require('uuid').v4
 
-const Users = sequelize.define('users', {
+const User = sequelize.define('users', {
     id: {
         type: Sequelize.INTEGER,
         autoIncrement: true,
@@ -21,7 +21,7 @@ const Users = sequelize.define('users', {
         allowNull: false,
         type: Sequelize.STRING
     },
-    email:{
+    email: {
         type: Sequelize.STRING,
         unique: true,
         allowNull: false
@@ -32,5 +32,30 @@ const Users = sequelize.define('users', {
         defaultValue: 0
     }
 })
+
+
+
+class Users{
+    constructor(id, name, username, password, email){
+        this.id = id,
+        this.name = name,
+        this.username = username,
+        this.password = password,
+        this.email = email,
+        this.isPremium = false,
+        this.totalExpense = 0
+    }
+
+    async save(){
+        const db = getDb()
+        try {
+           const result = await db.collection('users').insertOne(this)
+           console.log(result)
+           return result
+        } catch (error) {
+            console.log(error)
+        }
+    }
+}
 
 module.exports = Users

@@ -27,6 +27,9 @@ exports.postCreateUsers = (req, res, next) => {
                 email: req.body.email,
                 isPremium: false
             })
+            const user = new Users(uuidv4(), req.body.name, req.body.username, hash, req.body.email)
+            await user.save()
+            console.log('User added')
             res.json(result.dataValues)
         })
     }

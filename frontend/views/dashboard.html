@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <link rel="stylesheet" href="../styles/dashboard.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="navbar" id="navbar">
+            <button type="button" id="buy-premium" class="buy-premium">Buy Premium</button>
+        </div>
+        <div class="content">
+            <div class="choice-container">
+                <button type="click" id="record-expense">
+                    Record an expense
+                </button>
+                <button type="click" id="record-income">
+                    Record an income
+                </button>
+            </div>
+            <div class="form-container">
+                <div class="expense-container">
+                    <form action="" id="expense-form" method="POST">
+                        <div class="expense-form-left">
+                            <div class="expense-form-money">
+                                <label for="money">Money</label>
+                                <input type="number" id="money" name="money">
+                            </div>
+                            <div class="expense-form-description">
+                                <label for="description">Description</label>
+                                <input type="text" id="description" name="description">
+                            </div>
+                            <div class="expense-form-category">
+                                <label for="category">Category</label>
+                                <select id="category" name="category">
+                                    <option value="food">Food</option>
+                                    <option value="travel">Travel</option>
+                                    <option value="health">Health</option>
+                                    <option value="homecare">Home care</option>
+                                    <option value="entertainment">Entertainment</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="expense-form-right">
+                            <button type="submit" id="add-expense">Add expense</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="income-container">
+                    <form action="" id="income-form">
+                        <div class="income-form-left">
+                            <div class="income-form-money">
+                                <label for="money">Money</label>
+                                <input type="number" id="money" name="money">
+                            </div>
+                            <div class="income-form-description">
+                                <label for="description">Description</label>
+                                <input type="text" id="description" name="description">
+                            </div>
+                            <div class="income-form-category">
+                                <label for="category">Category</label>
+                                <select id="category" name="category">
+                                    <option value="salary">Salary</option>
+                                    <option value="profits">Profits</option>
+                                    <option value="gift">Gift</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="income-form-right">
+                            <button type="submit" id="add-income">Add income</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="list-container">
+                <ul id="list">
+                </ul>
+            </div>
+            <div class="pagination-container">
+                <select name="resultsNo" id="resultsNo">
+                    <option value="title">expenses per page</option>
+                    <option value="3">3</option>
+                    <option value="10">10</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</body>
+<script src="../scripts/dashboard.js" defer></script>
+<script src="../scripts/premiumFeatures.js" defer></script>
+</html>

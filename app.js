@@ -12,7 +12,7 @@ require('dotenv').config()
 const app = express()
 
 
-// const routes = require('./backend/routes/routes')
+const routes = require('./backend/routes/routes')
 const { mongoConnect } = require('./backend/utils/database')
 // const user = require('./backend/models/userModel')
 // const expenses = require('./backend/models/expensesModel')
@@ -32,7 +32,7 @@ app.use(morgan('combined', { stream: accessLogStream }))
 app.use(cors())
 app.use(bodyParser.json({ extended: false }));
 
-//app.use(routes)
+app.use(routes)
 
 
 // app.get('/',(req,res)=>{
@@ -49,4 +49,5 @@ app.use(bodyParser.json({ extended: false }));
 
 mongoConnect(() => {
     app.listen(8080)
+    console.log('listening')
 })

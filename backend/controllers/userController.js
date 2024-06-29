@@ -1,9 +1,7 @@
 const Users = require('../models/userModel')
-const ForgotPasswordRequests = require('../models/forgotPasswordrRequestsMode')
-const Sequelize = require('../utils/database');
+const ForgotPwdReq = require('../models/forgot-pwd-req')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
-const { v4: uuidv4 } = require('uuid');
 const Sib = require('sib-api-v3-sdk');
 
 
@@ -16,21 +14,14 @@ function generateToken(id, name) {
 
 
 exports.postCreateUsers = (req, res, next) => {
+    console.log(true)
     try {
         const saltrounds = 10
         bcrypt.hash(req.body.password, saltrounds, async (err, hash) => {
-            console.log(err, 'this is erropr')
-            const result = await Users.create({
-                name: req.body.name,
-                username: req.body.username,
-                password: hash,
-                email: req.body.email,
-                isPremium: false
-            })
-            const user = new Users(uuidv4(), req.body.name, req.body.username, hash, req.body.email)
-            await user.save()
+            const result = new Users(req.body.name, req.body.username, hash, req.body.email)
+            await result.saveUser()
             console.log('User added')
-            res.json(result.dataValues)
+            res.json(result)
         })
     }
     catch (error) {
@@ -43,12 +34,9 @@ exports.postCreateUsers = (req, res, next) => {
 exports.getSearchUsers = async (req, res, next) => {
     try {
         let findUsername = req.params.username
-        let found = false
-        const result = await Users.findAll({ where: { username: findUsername } })
-        if (result.length > 0) {
-            found = true
-        }
-        res.json(found)
+
+        const user = await Users.findUserByUsername(findUsername)
+        res.json(user)
     }
     catch (error) {
         res.status(500).json(error)
@@ -61,12 +49,12 @@ exports.getSearchUsers = async (req, res, next) => {
 exports.postLogin = async (req, res, next) => {
     try {
         let { username, password } = req.body
-        const result = await Users.findAll({ where: { username } })
-        if (!result.length) {
+        const user = await Users.findUserByUsername(username)
+        if (!user.length) {
             res.status(404).json({ error: 'userNotFound' })
         }
         else {
-            let fetchedPassword = result[0].dataValues.password
+            let fetchedPassword = user[0].password
             bcrypt.compare(password, fetchedPassword, (err, bcryptResult) => {
                 if (err) {
                     throw new Error('Something went wrong')
@@ -75,7 +63,7 @@ exports.postLogin = async (req, res, next) => {
                     res.status(401).json({ error: 'passwordWrong' })
                 }
                 else {
-                    res.status(200).json({ passwordMatch: true, token: generateToken(result[0].dataValues.id, result[0].dataValues.name), id: result[0].dataValues.id })
+                    res.status(200).json({ passwordMatch: true, token: generateToken(user[0].id, user[0].name), id: user[0].id })
                 }
             })
         }
@@ -87,28 +75,26 @@ exports.postLogin = async (req, res, next) => {
 
 
 
-exports.getCheckPremium = async (req, res, next) => {
-    try {
-        let user = await Users.findAll({ where: { id: req.user.dataValues.id } })
-        res.json({ isPremium: user[0].dataValues.isPremium })
-    }
-    catch (error) {
-        res.status(400).json('Something went wrong')
-    }
-}
+// exports.getCheckPremium = async (req, res, next) => {
+//     try {
+//         let user = await Users.findAll({ where: { id: req.user.dataValues.id } })
+//         res.json({ isPremium: user[0].dataValues.isPremium })
+//     }
+//     catch (error) {
+//         res.status(400).json('Something went wrong')
+//     }
+// }
 
 
 
 exports.postForgotPassword = async (req, res, next) => {
     try {
-        const t = await Sequelize.transaction()
         const { email } = req.body;
-
-        const user = await Users.findAll({ where: { email } })
-        const request = await ForgotPasswordRequests.create({
-            id: uuidv4(),
-            userId: user[0].id
-        }, { transaction: t })
+        const user = await Users.findUserByEmail(email)
+        const userId = user[0]._id.toString()
+        const forgotPwdReq = new ForgotPwdReq(userId)
+        const saveFPR = await forgotPwdReq.saveForgotPwdReq()
+        const FPRid = saveFPR.insertedId.toString()
 
         const client = Sib.ApiClient.instance;
         const apiKey = client.authentications['api-key'];
@@ -120,12 +106,10 @@ exports.postForgotPassword = async (req, res, next) => {
             sender,
             to: receiver,
             subject: 'Forgot password Sharpener Expense Tracker',
-            textContent: `Following is the link to reset password: http://localhost:8080/password/reset-password/${request.id}`
+            textContent: `Following is the link to reset password: http://localhost:8080/password/reset-password/${FPRid}`
         });
-        t.commit()
         res.json('success');
     } catch (error) {
-        t.rollback()
         console.error('Error sending email:', error);
         res.status(400).json('Something went wrong');
     }
@@ -135,20 +119,14 @@ exports.postForgotPassword = async (req, res, next) => {
 
 exports.getResetPassword = async (req, res, next) => {
     try {
-        const t = await Sequelize.transaction()
         const id = req.params.id
 
-        let result = await ForgotPasswordRequests.findAll({ where: { id, isActive: true } })
+        const result = await ForgotPwdReq.findForgotPwdReqActive(id)
         if (!result.length) {
             throw new Error('Request expired')
         }
-        await ForgotPasswordRequests.update({
-            isActive: false
-        }, {
-            where: { id },
-            transaction: t
-        })
-        t.commit()
+        await ForgotPwdReq.updateForgotPwdReq(id)
+
         res.status(200).send(`<html>
                                         <script>
                                             function formsubmitted(e){
@@ -177,19 +155,13 @@ exports.updatePassword = async (req, res, next) => {
     try {
         const { newpassword } = req.query;
         const { resetpasswordid } = req.params;
-        const t = await Sequelize.transaction()
-        const request = await ForgotPasswordRequests.findAll({ where: { id: resetpasswordid } })
-        const user = await Users.findAll({ where: { id: request[0].userId } })
+        
+        const request = await ForgotPwdReq.findForgotPwdReq(resetpasswordid)
+        console.log(request)
         const saltrounds = 10
         bcrypt.hash(newpassword, saltrounds, async (err, hash) => {
             console.log(err, 'this is erropr')
-            await Users.update({
-                password: hash
-            }, {
-                where: { id: request[0].userId },
-                transaction: t
-            })
-            t.commit()
+            await Users.updatePassword(request[0].userId, hash)
             res.status(201).json({ message: 'Successfuly update the new password' })
         })
     }

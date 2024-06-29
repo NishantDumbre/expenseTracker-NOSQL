@@ -1,57 +1,66 @@
 const { getDb } = require('../utils/database')
-const uuidv4 = require('uuid').v4
-
-const User = sequelize.define('users', {
-    id: {
-        type: Sequelize.INTEGER,
-        autoIncrement: true,
-        allowNull: false,
-        primaryKey: true
-    },
-    username: {
-        type: Sequelize.STRING,
-        unique: true,
-        allowNull: false
-    },
-    name: {
-        allowNull: false,
-        type: Sequelize.STRING
-    },
-    password: {
-        allowNull: false,
-        type: Sequelize.STRING
-    },
-    email: {
-        type: Sequelize.STRING,
-        unique: true,
-        allowNull: false
-    },
-    isPremium: Sequelize.BOOLEAN,
-    totalExpense: {
-        type: Sequelize.INTEGER,
-        defaultValue: 0
-    }
-})
+const { ObjectId } = require('mongodb')
 
 
-
-class Users{
-    constructor(id, name, username, password, email){
-        this.id = id,
+class Users {
+    constructor(name, username, password, email) {
         this.name = name,
-        this.username = username,
-        this.password = password,
-        this.email = email,
-        this.isPremium = false,
-        this.totalExpense = 0
+            this.username = username,
+            this.password = password,
+            this.email = email,
+            this.isPremium = false,
+            this.totalExpense = 0
     }
 
-    async save(){
+    async saveUser() {
         const db = getDb()
         try {
-           const result = await db.collection('users').insertOne(this)
-           console.log(result)
-           return result
+            const result = await db.collection('users').insertOne(this)
+            return result
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    static async findUserByUsername(findUsername) {
+        const db = getDb()
+        try {
+            const result = await db.collection('users').find({ username: findUsername }).toArray()
+            return result
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    static async findUserByEmail(findEmail) {
+        const db = getDb()
+        try {
+            const result = await db.collection('users').find({ email: findEmail }).toArray()
+            return result
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    static async findUserById(findId) {
+        const db = getDb()
+        try {
+            const result = await db.collection('users').find({ _id: ObjectId(findId) }).toArray()
+            return result
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+
+    static async updatePassword(id, password) {
+        try {
+            const db = getDb()
+            const result = await db.collection('users').updateOne(
+                { _id: new ObjectId(id) },
+                { $set: { password } }
+            )
+            return result
         } catch (error) {
             console.log(error)
         }

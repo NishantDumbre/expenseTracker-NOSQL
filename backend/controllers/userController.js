@@ -1,4 +1,4 @@
-const Users = require('../models/userModel')
+const Users = require('../models/user')
 const ForgotPwdReq = require('../models/forgot-pwd-req')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
@@ -14,7 +14,6 @@ function generateToken(id, name) {
 
 
 exports.postCreateUsers = (req, res, next) => {
-    console.log(true)
     try {
         const saltrounds = 10
         bcrypt.hash(req.body.password, saltrounds, async (err, hash) => {
@@ -34,8 +33,8 @@ exports.postCreateUsers = (req, res, next) => {
 exports.getSearchUsers = async (req, res, next) => {
     try {
         let findUsername = req.params.username
-
         const user = await Users.findUserByUsername(findUsername)
+        console.log(user)
         res.json(user)
     }
     catch (error) {
@@ -63,7 +62,7 @@ exports.postLogin = async (req, res, next) => {
                     res.status(401).json({ error: 'passwordWrong' })
                 }
                 else {
-                    res.status(200).json({ passwordMatch: true, token: generateToken(user[0].id, user[0].name), id: user[0].id })
+                    res.status(200).json({ passwordMatch: true, token: generateToken(user[0]._id.toString(), user[0].name) })
                 }
             })
         }

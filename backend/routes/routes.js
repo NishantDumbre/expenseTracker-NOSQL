@@ -1,8 +1,8 @@
 const userController = require('../controllers/userController')
-// const expenseController = require('../controllers/expenseController')
+const expenseController = require('../controllers/expenseController')
 // const orderController = require('../controllers/orderController')
 // const premiumFeatures = require('../controllers/premiumFeatures')
-// const authenticationMiddleware = require('../middlewares/authenticate')
+const authenticationMiddleware = require('../middlewares/authenticate')
 const express = require('express');
 const router = express.Router()
 
@@ -10,7 +10,7 @@ router.post('/signup', userController.postCreateUsers)
 router.get('/signup/:username', userController.getSearchUsers)
 router.post('/login', userController.postLogin)
 
-// router.post('/add-expense', expenseController.postExpense)
+router.post('/add-expense', authenticationMiddleware.authenticate, expenseController.postExpense)
 // router.get('/get-expense', authenticationMiddleware.authenticate ,expenseController.getExpense)
 // router.delete('/delete-expense/:id', authenticationMiddleware.authenticate, expenseController.deleteExpense)
 

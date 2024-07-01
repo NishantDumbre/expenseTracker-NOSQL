@@ -3,19 +3,31 @@ const { ObjectId } = require('mongodb')
 
 
 class Users {
-    constructor(name, username, password, email) {
+    constructor(name, username, password, email, id, totalExpense) {
         this.name = name,
             this.username = username,
             this.password = password,
             this.email = email,
             this.isPremium = false,
-            this.totalExpense = 0
+            this.totalExpense = totalExpense ? totalExpense : 0,
+            this._id = id ? new ObjectId(id) : null
     }
 
     async saveUser() {
         const db = getDb()
+        let result
         try {
-            const result = await db.collection('users').insertOne(this)
+            if (this._id) {
+                console.log(this)
+                result = await db.collection('users').updateOne(
+                    { _id: this._id },
+                    { $set: this }
+                )
+            }
+            else {
+                console.log(this)
+                result = await db.collection('users').insertOne(this)
+            }
             return result
         } catch (error) {
             console.log(error)
@@ -45,7 +57,7 @@ class Users {
     static async findUserById(findId) {
         const db = getDb()
         try {
-            const result = await db.collection('users').find({ _id: ObjectId(findId) }).toArray()
+            const result = await db.collection('users').find({ _id: new ObjectId(findId) }).toArray()
             return result
         } catch (error) {
             console.log(error)

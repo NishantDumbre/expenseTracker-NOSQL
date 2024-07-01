@@ -1,12 +1,13 @@
 const jwt = require('jsonwebtoken')
-const Users = require('../models/userModel')
+const Users = require('../models/user')
 
 
 exports.authenticate = async (req, res, next) => {
     try {
         const token = req.header('Authorization')
         const tokenData = jwt.verify(token, process.env.TOKEN_SECRET_KEY)
-        let result = await Users.findByPk(tokenData.userId)
+        console.log(tokenData)
+        let result = await Users.findUserById(tokenData.userId)
         req.user = result
         console.log('Authenticated')
         next()

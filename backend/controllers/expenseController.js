@@ -1,40 +1,31 @@
-const Expenses = require('../models/expensesModel')
-const Users = require('../models/userModel')
+const Expenses = require('../models/expense')
+const Users = require('../models/user')
 const jwt = require('jsonwebtoken')
-const Sequelize = require('../utils/database');
+
 
 
 exports.postExpense = async (req, res, next) => {
     try {
-        const t = await Sequelize.transaction()
-        const tokenUserId = jwt.verify(req.body.userId, process.env.TOKEN_SECRET_KEY)
-        const result = await Expenses.create({
-            money: req.body.money,
-            description: req.body.description,
-            category: req.body.category,
-            userId: tokenUserId.userId,
-            type: req.body.type
-        },
-            { transaction: t })
-        const user = await Users.findByPk(tokenUserId.userId)
-        if (req.body.type == 'income') {
-            user.totalExpense = Number(user.totalExpense) + Number(req.body.money);
+        const { money, description, category, type } = req.body
+        const userId = req.user[0]._id.toString()
+        const result = new Expenses(money, description, category, userId, type)
+        result.saveExpense()
+        let user = await Users.findUserById(userId)
+        user = user[0]
+        if (type == 'income') {
+            user.totalExpense = Number(user.totalExpense) + Number(money);
         }
         else {
-            user.totalExpense = Number(user.totalExpense) - Number(req.body.money);
+            user.totalExpense = Number(user.totalExpense) - Number(money);
         }
-        await Users.update({
-            totalExpense: user.totalExpense
-        }, {
-            where: { id: tokenUserId.userId },
-            transaction: t
-        })
-        await t.commit()
-        console.log('committed')
-        res.status(200).json(result.dataValues)
+        console.log(user)
+        const updatedUser = new Users(user.name, user.username, user.password, user.email, userId, user.totalExpense)
+        console.log('<<<<<<<<<<<<<<<<<<<<<')
+        console.log(updatedUser)
+        updatedUser.saveUser()
+        res.status(200).json(result)
     }
     catch (error) {
-        t.rollback()
         res.status(500).json(error)
     }
 }

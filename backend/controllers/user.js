@@ -65,7 +65,7 @@ exports.checkUserExists = async (req, res, next) => {
 
 
 
-exports.postLogin = async (req, res, next) => {
+exports.login = async (req, res, next) => {
     try {
         const { username, password } = req.body
         const result = await User.findOne({ username })
@@ -106,7 +106,7 @@ exports.postLogin = async (req, res, next) => {
 
 
 
-exports.postForgotPassword = async (req, res, next) => {
+exports.sendForgotPwdEmail = async (req, res, next) => {
 
     const { email } = req.body;
     const user = await User.findOne({ email })
@@ -143,7 +143,7 @@ exports.postForgotPassword = async (req, res, next) => {
 
 
 
-exports.getResetPassword = async (req, res, next) => {
+exports.newPasswordURL = async (req, res, next) => {
     try {
         const id = req.params.id
 

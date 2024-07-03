@@ -1,31 +1,31 @@
 let recordExpenseButton = document.getElementById('record-expense')
 let recordIncomeButton = document.getElementById('record-income')
-let money = document.getElementById('money')
-let description = document.getElementById('description')
-let category = document.getElementById('category')
 let expenseForm = document.getElementById('expense-form')
 let incomeForm = document.getElementById('income-form')
 let list = document.getElementById('list')
 let buyPremiumButton = document.getElementById('buy-premium')
 let resultsNo = document.getElementById('resultsNo')
 
-expenseForm.addEventListener('submit', addExpense)
-incomeForm.addEventListener('submit', addIncome)
-list.addEventListener('click', deleteExpense)
+expenseForm.addEventListener('submit', addRecord)
+incomeForm.addEventListener('submit', addRecord)
+// list.addEventListener('click', deleteExpense)
 recordExpenseButton.addEventListener('click', recordExpense)
 recordIncomeButton.addEventListener('click', recordIncome)
 resultsNo.addEventListener('change', changePageResults)
-window.addEventListener('DOMContentLoaded', populateExpenses)
+window.addEventListener('DOMContentLoaded', () => {
+    populateExpenses(); // Call only once on initial load
+  })
 window.addEventListener('DOMContentLoaded', recordExpense)
+window.addEventListener('DOMContentLoaded', changePageResults)
 
 
-const backendAPI = `http://localhost:8080`
+const URL = `http://localhost:8080`
 const token = localStorage.getItem('token')
 
 // Enables expense form and disables income form
 function recordExpense() {
-    let expenseContainer = document.querySelector('.expense-container')
-    let incomeContainer = document.querySelector('.income-container')
+    const expenseContainer = document.querySelector('.expense-container')
+    const incomeContainer = document.querySelector('.income-container')
     incomeContainer.style.display = 'none'
     expenseContainer.style.display = 'block'
 }
@@ -34,59 +34,55 @@ function recordExpense() {
 
 // Enables income form and disables expense form
 function recordIncome() {
-    let expenseContainer = document.querySelector('.expense-container')
-    let incomeContainer = document.querySelector('.income-container')
+    const expenseContainer = document.querySelector('.expense-container')
+    const incomeContainer = document.querySelector('.income-container')
     expenseContainer.style.display = 'none'
     incomeContainer.style.display = 'block'
 }
 
 
 
-// Adding expense
-async function addExpense(e) {
+// Adding expense and income
+async function addRecord(e) {
     e.preventDefault()
+    const incomeContainer = document.querySelector('.income-container')
+
+    let money, description, category, type
+    if (incomeContainer.style.display !== 'none') {
+        money = document.getElementById('income-form').money
+        description = document.getElementById('income-form').description
+        category = document.getElementById('income-form').category
+        type = 'income'
+    } else {
+        money = document.getElementById('money')
+        description = document.getElementById('description')
+        category = document.getElementById('category')
+        type = 'expense'
+    }
+
+    if (!money.value || !description.value || !category.value) {
+        alert('Please fill all fields')
+        return
+    }
+    const obj = {
+        money: money.value,
+        description: description.value,
+        category: category.value,
+        type: type
+    }
+
     try {
-        let obj = {
-            money: money.value,
-            description: description.value,
-            category: category.value,
-            userId: localStorage.getItem('token'),
-            type: 'expense'
-        }
-        let result = await axios.post(`${backendAPI}/expense/add-expense`, obj, { headers: { 'Authorization': token } })
+        const result = await axios.post(`${URL}/expense/add-record`, obj, { headers: { 'Authorization': token } })
         console.log('Added an expense')
         money.value = ''
         description.value = ''
         showExpenses(result.data)
-    }
-    catch (error) {
+    } catch (error) {
         console.log(error)
+
     }
 }
 
-
-
-// Adding income 
-async function addIncome(e) {
-    e.preventDefault()
-    try {
-        let obj = {
-            money: money.value,
-            description: description.value,
-            category: category.value,
-            userId: localStorage.getItem('token'),
-            type: 'income'
-        }
-        let result = await axios.post(`${backendAPI}/expense/add-income`, obj, { headers: { 'Authorization': token } })
-        console.log('Added an income')
-        money.value = ''
-        description.value = ''
-        showExpenses(result.data)
-    }
-    catch (error) {
-        console.log(error)
-    }
-}
 
 
 
@@ -131,7 +127,7 @@ async function populateExpenses(pages) {
     if (savedPageResultsSetting > 0) {
         number = savedPageResultsSetting
     }
-    let result = await axios.get(`${backendAPI}/expense/get-expense?page=${page}&results=${number}`, { headers: { 'Authorization': token } })
+    let result = await axios.get(`${URL}/expense/get-record?page=${page}&results=${number}`, { headers: { 'Authorization': token } })
     for (let data of result.data.expenses) {
         showExpenses(data)
 
@@ -196,7 +192,8 @@ async function showPagination({
 async function deleteExpense(e) {
     if (e.target.classList.contains('delete')) {
         let target = e.target.parentElement
-        await axios.delete(`${backendAPI}/expense/delete-expense/${target.id}`, { headers: { 'Authorization': token } })
+        console.log(target.id)
+        await axios.delete(`${URL}/expense/delete-record/${target.id}`, { headers: { 'Authorization': token } })
         target.remove()
     }
 }
@@ -205,38 +202,38 @@ async function deleteExpense(e) {
 
 
 
-// Razorpay code
-buyPremiumButton.onclick = async function (e) {
-    let response = await axios.get(`${backendAPI}/order/buy-premium`, { headers: { 'Authorization': token } })
-    let options = {
-        "key": response.data.key_id, // Enter the Key ID generated from the Dashboard
-        "order_id": response.data.order.id,
-        "handler": async function (response) {
-            console.log('Handler executed')
-            await axios.post(`${backendAPI}/order/update-transaction-status`, {
-                orderId: options.order_id,
-                paymentId: response.razorpay_payment_id,
-                success: true
-            }, {
-                headers: { 'Authorization': token }
-            })
-            alert('Payment successful')
-            window.location.href = window.location.href
-        }
-    };
-    let rzp1 = new Razorpay(options);
-    rzp1.open();
-    e.preventDefault();
+// // Razorpay code
+// buyPremiumButton.onclick = async function (e) {
+//     let response = await axios.get(`${URL}/order/buy-premium`, { headers: { 'Authorization': token } })
+//     let options = {
+//         "key": response.data.key_id, // Enter the Key ID generated from the Dashboard
+//         "order_id": response.data.order.id,
+//         "handler": async function (response) {
+//             console.log('Handler executed')
+//             await axios.post(`${URL}/order/update-transaction-status`, {
+//                 orderId: options.order_id,
+//                 paymentId: response.razorpay_payment_id,
+//                 success: true
+//             }, {
+//                 headers: { 'Authorization': token }
+//             })
+//             alert('Payment successful')
+//             window.location.href = window.location.href
+//         }
+//     };
+//     let rzp1 = new Razorpay(options);
+//     rzp1.open();
+//     e.preventDefault();
 
-    rzp1.on('payment.failed', async function (response) {
-        console.log('Failed executed')
-        await axios.post(`${backendAPI}/order/update-transaction-status`, {
-            orderId: options.order_id,
-            paymentId: response.razorpay_payment_id,
-            success: false
-        }, {
-            headers: { 'Authorization': token }
-        })
-        alert('Something went wrong')
-    })
-}
+//     rzp1.on('payment.failed', async function (response) {
+//         console.log('Failed executed')
+//         await axios.post(`${URL}/order/update-transaction-status`, {
+//             orderId: options.order_id,
+//             paymentId: response.razorpay_payment_id,
+//             success: false
+//         }, {
+//             headers: { 'Authorization': token }
+//         })
+//         alert('Something went wrong')
+//     })
+// }

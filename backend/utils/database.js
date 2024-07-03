@@ -1,24 +1,11 @@
-const mongodb = require('mongodb')
-const MongoClient = mongodb.MongoClient
+const Sequelize = require('sequelize')
+require('dotenv').config()
 
-let _db
+console.log(process.env.DB_NAME,process.env.DB_USERNAME,process.env.DB_PASSWORD,process.env.DB_HOST)
 
-const mongoConnect = async (callback) => {
-    try {
-        const client = await MongoClient.connect(process.env.MONGO_DB)
-        console.log('Connected')
-        _db = client.db()
-        callback()
-    } catch (error) {
-        console.log(error)
-    }
-}
+const sequelize = new Sequelize(process.env.DB_NAME,process.env.DB_USERNAME,process.env.DB_PASSWORD,{
+    dialect:'mysql',
+    host:process.env.DB_HOST
+})
 
-const getDb = () => {
-    if (_db) {
-        return _db
-    }
-    throw 'No database found'
-}
-
-module.exports = { mongoConnect, getDb }
+module.exports = sequelize

@@ -25,8 +25,7 @@ async function createAccount(e) {
         }
 
         let results = await axios.get(`http://localhost:8080/signup/${obj.username}`)
-        console.log(results)
-        if (results.data.length) {
+        if (results.data == true) {
             alreadyExists()
             return
         }

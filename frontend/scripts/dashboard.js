@@ -1,4 +1,3 @@
-
 let recordExpenseButton = document.getElementById('record-expense')
 let recordIncomeButton = document.getElementById('record-income')
 let money = document.getElementById('money')
@@ -51,10 +50,10 @@ async function addExpense(e) {
             money: money.value,
             description: description.value,
             category: category.value,
+            userId: localStorage.getItem('token'),
             type: 'expense'
         }
-        const token = localStorage.getItem('token')
-        let result = await axios.post(`${backendAPI}/add-expense`, obj, { headers: { 'Authorization': token } })
+        let result = await axios.post(`${backendAPI}/add-expense`, obj)
         console.log('Added an expense')
         money.value = ''
         description.value = ''
@@ -75,10 +74,10 @@ async function addIncome(e) {
             money: money.value,
             description: description.value,
             category: category.value,
+            userId: localStorage.getItem('token'),
             type: 'income'
         }
-        const token = localStorage.getItem('token')
-        const result = await axios.post(`${backendAPI}/add-income`, obj, { headers: { 'Authorization': token } })
+        let result = await axios.post(`${backendAPI}/add-income`, obj)
         console.log('Added an income')
         money.value = ''
         description.value = ''
@@ -93,7 +92,6 @@ async function addIncome(e) {
 
 // creates the expenses to be displayed. Passed into other functions
 function showExpenses(obj) {
-    console.log(obj)
     let li = document.createElement('li')
     li.innerHTML = `${obj.type} ${obj.money}  ${obj.description}  ${obj.category}   <button class="delete">Delete</button>`
     li.id = obj.id

@@ -1,11 +1,10 @@
-
 window.addEventListener('DOMContentLoaded', checkPremiumFeatures)
 
 
 
 async function checkPremiumFeatures() {
     let token = localStorage.getItem('token')
-    let result = await axios.get('http://localhost:8080/check-premium', { headers: { 'Authorization': token } })
+    let result = await axios.get('http://localhost:8080/user/check-premium', { headers: { 'Authorization': token } })
     if (result.data.isPremium == true) {
         premiumFeatures()
     }

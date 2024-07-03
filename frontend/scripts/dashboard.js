@@ -20,7 +20,7 @@ window.addEventListener('DOMContentLoaded', recordExpense)
 
 
 const backendAPI = `http://localhost:8080`
-
+const token = localStorage.getItem('token')
 
 // Enables expense form and disables income form
 function recordExpense() {
@@ -53,7 +53,7 @@ async function addExpense(e) {
             userId: localStorage.getItem('token'),
             type: 'expense'
         }
-        let result = await axios.post(`${backendAPI}/add-expense`, obj)
+        let result = await axios.post(`${backendAPI}/expense/add-expense`, obj, { headers: { 'Authorization': token } })
         console.log('Added an expense')
         money.value = ''
         description.value = ''
@@ -77,7 +77,7 @@ async function addIncome(e) {
             userId: localStorage.getItem('token'),
             type: 'income'
         }
-        let result = await axios.post(`${backendAPI}/add-income`, obj)
+        let result = await axios.post(`${backendAPI}/expense/add-income`, obj, { headers: { 'Authorization': token } })
         console.log('Added an income')
         money.value = ''
         description.value = ''
@@ -119,7 +119,6 @@ function changePageResults() {
 
 // generates all expenses on loading the page
 async function populateExpenses(pages) {
-    let token = localStorage.getItem('token')
     let page = 1
     if (pages) {
         page = pages
@@ -132,7 +131,7 @@ async function populateExpenses(pages) {
     if (savedPageResultsSetting > 0) {
         number = savedPageResultsSetting
     }
-    let result = await axios.get(`${backendAPI}/get-expense?page=${page}&results=${number}`, { headers: { 'Authorization': token } })
+    let result = await axios.get(`${backendAPI}/expense/get-expense?page=${page}&results=${number}`, { headers: { 'Authorization': token } })
     for (let data of result.data.expenses) {
         showExpenses(data)
 
@@ -197,8 +196,7 @@ async function showPagination({
 async function deleteExpense(e) {
     if (e.target.classList.contains('delete')) {
         let target = e.target.parentElement
-        let token = localStorage.getItem('token')
-        await axios.delete(`${backendAPI}/delete-expense/${target.id}`, { headers: { 'Authorization': token } })
+        await axios.delete(`${backendAPI}/expense/delete-expense/${target.id}`, { headers: { 'Authorization': token } })
         target.remove()
     }
 }
@@ -209,14 +207,13 @@ async function deleteExpense(e) {
 
 // Razorpay code
 buyPremiumButton.onclick = async function (e) {
-    let token = localStorage.getItem('token')
-    let response = await axios.get(`${backendAPI}/purchases/buy-premium`, { headers: { 'Authorization': token } })
+    let response = await axios.get(`${backendAPI}/order/buy-premium`, { headers: { 'Authorization': token } })
     let options = {
         "key": response.data.key_id, // Enter the Key ID generated from the Dashboard
         "order_id": response.data.order.id,
         "handler": async function (response) {
             console.log('Handler executed')
-            await axios.post(`${backendAPI}/purchases/update-transaction-status`, {
+            await axios.post(`${backendAPI}/order/update-transaction-status`, {
                 orderId: options.order_id,
                 paymentId: response.razorpay_payment_id,
                 success: true
@@ -233,7 +230,7 @@ buyPremiumButton.onclick = async function (e) {
 
     rzp1.on('payment.failed', async function (response) {
         console.log('Failed executed')
-        await axios.post(`${backendAPI}/purchases/update-transaction-status`, {
+        await axios.post(`${backendAPI}/order/update-transaction-status`, {
             orderId: options.order_id,
             paymentId: response.razorpay_payment_id,
             success: false

@@ -24,13 +24,13 @@ async function createAccount(e) {
             email:email.value
         }
 
-        let results = await axios.get(`http://localhost:8080/signup/${obj.username}`)
+        let results = await axios.get(`http://localhost:8080/user/signup/${obj.username}`)
         if (results.data == true) {
             alreadyExists()
             return
         }
         else {
-            await axios.post('http://localhost:8080/signup', obj)
+            await axios.post('http://localhost:8080/user/signup', obj)
             console.log('account created successfully')
             window.location.href = './login.html'
         }

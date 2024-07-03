@@ -13,7 +13,7 @@ console.log(true)
         email:email.value
     }
 
-    await axios.post('http://localhost:8080/password/forgot-password', obj)
+    await axios.post('http://localhost:8080/user/forgot-password', obj)
     let message = document.createElement('h3')
     message.innerHTML = 'Sent email, redirecting to login page'
     message.style.color = 'green'

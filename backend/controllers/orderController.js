@@ -1,4 +1,4 @@
-const Orders = require('../models/ordersModel')
+const Orders = require('../models/order')
 const Razorpay = require('razorpay')
 
 exports.getPurchasePremium = async (req, res, next) => {

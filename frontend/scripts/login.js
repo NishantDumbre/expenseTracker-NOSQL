@@ -25,7 +25,7 @@ async function loginAccount(e) {
             password: password.value
         }
 
-        let result = await axios.post('http://localhost:8080/login', obj)
+        let result = await axios.post('http://localhost:8080/user/login', obj)
         console.log(result)
         localStorage.setItem('token', result.data.token)
         window.location.href = '../views/dashboard.html';

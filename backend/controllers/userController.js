@@ -1,5 +1,5 @@
-const Users = require('../models/userModel')
-const ForgotPasswordRequests = require('../models/forgotPasswordrRequestsMode')
+const Users = require('../models/user')
+const ForgotPasswordRequests = require('../models/forgot-pwd-req')
 const Sequelize = require('../utils/database');
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')

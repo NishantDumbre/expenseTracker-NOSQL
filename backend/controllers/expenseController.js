@@ -1,5 +1,5 @@
-const Expenses = require('../models/expensesModel')
-const Users = require('../models/userModel')
+const Expenses = require('../models/expense')
+const Users = require('../models/user')
 const jwt = require('jsonwebtoken')
 const Sequelize = require('../utils/database');
 

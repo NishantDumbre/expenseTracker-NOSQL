@@ -1,11 +1,11 @@
-const Users = require('../models/userModel')
-const Expenses = require('../models/expensesModel')
+const Users = require('../models/user')
+const Expenses = require('../models/expense')
 const Sequelize = require('sequelize')
 const sequelize = require('../utils/database')
 // const fs = require('fs').promises
 // const path = require('path')
 const S3Services = require('../services/S3Services')
-const DownloadURLs = require('../models/downloadURLModel')
+const DownloadURLs = require('../models/download-URL')
 
 
 exports.getUserLeaderboard = async (req, res, next) => {

@@ -77,3 +77,10 @@ body {
 .signup-button:hover {
     background-color: #0056b3;
 }
+
+.error{
+    background-color: yellow;
+    color: green;
+    padding: 5px;
+    font-size: 20px;
+}

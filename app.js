@@ -15,14 +15,6 @@ const app = express()
 
 const routes = require('./backend/routes/routes')
 
-
-const user = require('./backend/models/user')
-const expense = require('./backend/models/expense')
-const order = require('./backend/models/order')
-const forgotPwdReq = require('./backend/models/forgot-pwd-req')
-const downloadURL = require('./backend/models/download-URL')
-
-
 const accessLogStream = fs.createWriteStream(path.join(__dirname, 'access.log'), { flags: 'a' })
 
 
@@ -48,11 +40,6 @@ app.use((req,res)=>{
 })
 
 
-user.hasMany(expense)
-user.hasMany(order)
-order.belongsTo(user)
-user.hasMany(forgotPwdReq)
-user.hasMany(downloadURL)
 
 mongoose.connect(process.env.MONGO_DB)
     .then(() => {

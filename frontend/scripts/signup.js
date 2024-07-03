@@ -5,59 +5,62 @@ let email = document.getElementById('email')
 let signup = document.getElementById('signup-form')
 let login = document.getElementsByClassName('login')[0]
 
-
 signup.addEventListener('submit', createAccount)
+
+const URL = 'http://localhost:8080'
 
 
 async function createAccount(e) {
+    e.preventDefault()
+    if (!name.value || !username.value || !password.value || !email.value) {
+        await displayMessage('Please fill all fields')
+        return
+    }
+
+    let obj = {
+        username: username.value,
+        email: email.value
+    }
+
     try {
-        e.preventDefault()
-        if (!name.value || !username.value || !password.value || !email.value) {
-            emptyFields()
+        const result = await axios.post(`${URL}/user/check-signup-creds`, obj)
+        if (result.data.success === false) {
+            await displayMessage(result.data.message)
             return
         }
-
-        let obj = {
-            name: name.value,
-            username: username.value,
-            password: password.value,
-            email:email.value
-        }
-
-        let results = await axios.get(`http://localhost:8080/user/signup/${obj.username}`)
-        if (results.data == true) {
-            alreadyExists()
-            return
-        }
-        else {
-            await axios.post('http://localhost:8080/user/signup', obj)
-            console.log('account created successfully')
-            window.location.href = './login.html'
-        }
-    }
+    } 
     catch (error) {
-        console.log(error)
+        console.error('Error checking credentials:', error)
+    }
+
+    obj = {
+        ...obj,
+        password: password.value,
+        name: name.value
+    }
+    try {
+        await axios.post(`${URL}/user/signup`, obj)
+        console.log('Account created successfully')
+        await displayMessage('Account created successfully')
+        window.location.href = './login.html'
+    } 
+    catch (error) {
+        await displayMessage('Error creating account')
+        console.error('Error creating account:', error)
     }
 }
 
-function alreadyExists() {
-    let error = document.createElement('h3')
-    error.style.backgroundColor = 'yellow'
-    error.style.color = 'green'
-    error.innerHTML = 'Username already registered'
-    login.appendChild(error)
-    setTimeout(() => {
-        error.remove()
-    }, 2000)
-}
 
-function emptyFields() {
-    let error = document.createElement('h3')
-    error.style.backgroundColor = 'yellow'
-    error.style.color = 'green'
-    error.innerHTML = 'Please fill all fields'
-    login.appendChild(error)
-    setTimeout(() => {
-        error, remove()
-    }, 2000);
+
+function displayMessage(x) {
+    return new Promise((resolve, reject) => {
+        const error = document.createElement('p')
+        error.className = 'error'
+        error.innerHTML = x
+        login.appendChild(error)
+        setTimeout(() => {
+            error.remove()
+            resolve()
+        }, 2000)
+    })
 }

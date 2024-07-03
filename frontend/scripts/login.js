@@ -6,6 +6,8 @@ let signup = document.getElementById('signup-button')
 signup.addEventListener('click', goToLogin)
 login.addEventListener('submit', loginAccount)
 
+const URL = 'http://localhost:8080'
+
 
 function goToLogin(e) {
     e.preventDefault()
@@ -14,56 +16,40 @@ function goToLogin(e) {
 
 
 async function loginAccount(e) {
-    try {
-        e.preventDefault()
-        if (!username.value || !password.value) {
-            emptyFields()
-            return
-        }
-        let obj = {
-            username: username.value,
-            password: password.value
-        }
+    e.preventDefault()
+    if (!username.value || !password.value) {
+        displayMessage('Please fill all fields')
+        return
+    }
 
-        let result = await axios.post('http://localhost:8080/user/login', obj)
-        console.log(result)
+    const obj = {
+        username: username.value,
+        password: password.value
+    }
+
+    try {
+        const result = await axios.post(`${URL}/user/login`, obj)
         localStorage.setItem('token', result.data.token)
         window.location.href = '../views/dashboard.html';
-    }
-    catch (err) {
-        let error = err.response.data.error
-        console.log(error)
-        errorMessage(error)
+
+    } 
+    catch (error) {
+        const err = error.response.data.message
+        console.log(err)
+        displayMessage(err)
     }
 }
 
 
-function errorMessage(x) {
-    let message
-    if (x == 'userNotFound') {
-        message = 'User does not exist'
-    }
-    else if (x == 'passwordWrong') {
-        message = 'User not authorized. Incorrect Password'
-    }
-    let error = document.createElement('h3')
-    error.style.backgroundColor = 'yellow'
-    error.style.color = 'green'
-    error.innerHTML = message
-    login.appendChild(error)
-    setTimeout(() => {
-        error.remove()
-    }, 2000)
-}
-
-
-function emptyFields() {
-    let error = document.createElement('h3')
-    error.style.backgroundColor = 'yellow'
-    error.style.color = 'green'
-    error.innerHTML = 'Please fill all fields'
-    login.appendChild(error)
-    setTimeout(() => {
-        error.remove()
-    }, 2000);
+function displayMessage(x) {
+    return new Promise((resolve, reject) => {
+        const error = document.createElement('p')
+        error.className = 'error'
+        error.innerHTML = x
+        login.appendChild(error)
+        setTimeout(() => {
+            error.remove()
+            resolve()
+        }, 2000)
+    })
 }

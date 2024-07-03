@@ -15,22 +15,22 @@ function generateToken(id, name) {
 
 exports.createUser = (req, res, next) => {
     try {
-        const {username, password, email, name} = req.body
-        const saltrounds = 10
+        const { username, password, email, name } = req.body
+        const saltrounds = process.env.SALT_ROUNDS
         bcrypt.hash(password, saltrounds, async (err, hash) => {
             if (err) {
                 throw new Error('Something went wrong')
             }
-            const newUser = new User({
+            const instance = new User({
                 name,
                 username,
                 password: hash,
                 email,
                 premium: false
             })
-        
-            const result = await newUser.save()
-            res.json(result)
+
+            const user = await instance.save()
+            res.json(user)
         })
     }
     catch (error) {
@@ -42,20 +42,20 @@ exports.createUser = (req, res, next) => {
 
 exports.checkUserExists = async (req, res, next) => {
     try {
-        const {username, email} = req.body
+        const { username, email } = req.body
 
-        const foundEmail = await User.findOne({email})
-        if(foundEmail){
-            return res.status(200).json({success:false, message:'Email already registered'})
+        const foundEmail = await User.findOne({ email })
+        if (foundEmail) {
+            return res.status(200).json({ success: false, message: 'Email already registered' })
         }
-        else{
-            const foundUsername = await User.findOne({username})
-            if(foundUsername){
-                return res.status(200).json({success:false, message:'Username already registered'})
+        else {
+            const foundUsername = await User.findOne({ username })
+            if (foundUsername) {
+                return res.status(200).json({ success: false, message: 'Username already registered' })
             }
         }
-        
-        res.status(200).json({success:true})
+
+        res.status(200).json({ success: true })
     }
     catch (error) {
         res.status(500).json(error)
@@ -68,9 +68,9 @@ exports.checkUserExists = async (req, res, next) => {
 exports.postLogin = async (req, res, next) => {
     try {
         const { username, password } = req.body
-        const result = await User.findOne({username})
+        const result = await User.findOne({ username })
         if (!result) {
-            return res.status(404).json({ success: false, message:'User not found' })
+            return res.status(404).json({ success: false, message: 'User not found' })
         }
         else {
             const fetchedPassword = result.password
@@ -79,10 +79,10 @@ exports.postLogin = async (req, res, next) => {
                     throw new Error('Something went wrong')
                 }
                 if (bcryptResult === false) {
-                    res.status(401).json({ success: false, message:'Entered password is wrong' })
+                    res.status(401).json({ success: false, message: 'Entered password is wrong' })
                 }
                 else {
-                    res.status(200).json({ success: true, token: generateToken(result.id, result.name)})
+                    res.status(200).json({ success: true, token: generateToken(result.id, result.name) })
                 }
             })
         }
@@ -106,104 +106,108 @@ exports.postLogin = async (req, res, next) => {
 
 
 
-// exports.postForgotPassword = async (req, res, next) => {
-//     try {
-//         const t = await Sequelize.transaction()
-//         const { email } = req.body;
+exports.postForgotPassword = async (req, res, next) => {
 
-//         const user = await Users.findAll({ where: { email } })
-//         const request = await ForgotPwdReq.create({
-//             //id: uuidv4(),
-//             userId: user[0].id
-//         }, { transaction: t })
+    const { email } = req.body;
+    const user = await User.findOne({ email })
+    if (!user) {
+        return res.status(404).json({ success: false, message: 'Email not found' })
+    }
 
-//         const client = Sib.ApiClient.instance;
-//         const apiKey = client.authentications['api-key'];
-//         apiKey.apiKey = process.env.SENDINBLUE_KEY;
-//         const tranEmailApi = new Sib.TransactionalEmailsApi();
-//         const sender = { email: 'nishant.dumbre@gmail.com' };
-//         const receiver = [{ email }];
-//         await tranEmailApi.sendTransacEmail({
-//             sender,
-//             to: receiver,
-//             subject: 'Forgot password Sharpener Expense Tracker',
-//             textContent: `Following is the link to reset password: http://localhost:8080/password/reset-password/${request.id}`
-//         });
-//         t.commit()
-//         res.json('success');
-//     } catch (error) {
-//         t.rollback()
-//         console.error('Error sending email:', error);
-//         res.status(400).json('Something went wrong');
-//     }
-// };
+    const instance = new ForgotPwdReq({
+        user_id: user._id,
+        is_active: true
+    })
+    const request = await instance.save()
+
+    const client = Sib.ApiClient.instance;
+    const apiKey = client.authentications['api-key'];
+    apiKey.apiKey = process.env.SENDINBLUE_KEY;
+    const tranEmailApi = new Sib.TransactionalEmailsApi();
+    const sender = { email: 'nishant.dumbre@gmail.com' };
+    const receiver = [{ email }];
+    try {
+        await tranEmailApi.sendTransacEmail({
+            sender,
+            to: receiver,
+            subject: 'Forgot password Sharpener Expense Tracker',
+            textContent: `Following is the link to reset password: http://localhost:8080/user/reset-password/${request._id.toString()}`
+        });
+        res.status(200).json({ success: true, message: 'Reset link sent successfully' });
+    } catch (error) {
+        console.error('Error sending email:', error);
+        res.status(400).json({ success: false, message: 'Something went wrong' });
+    }
+
+};
 
 
 
-// exports.getResetPassword = async (req, res, next) => {
-//     try {
-//         const t = await Sequelize.transaction()
-//         const id = req.params.id
+exports.getResetPassword = async (req, res, next) => {
+    try {
+        const id = req.params.id
 
-//         let result = await ForgotPwdReq.findAll({ where: { id, isActive: true } })
-//         if (!result.length) {
-//             throw new Error('Request expired')
-//         }
-//         await ForgotPwdReq.update({
-//             isActive: false
-//         }, {
-//             where: { id },
-//             transaction: t
-//         })
-//         t.commit()
-//         res.status(200).send(`<html>
-//                                         <script>
-//                                             function formsubmitted(e){
-//                                                 e.preventDefault();
-//                                                 console.log('called')
-//                                             }
-//                                         </script>
+        const result = await ForgotPwdReq.findOneAndUpdate({
+            _id: id,
+            is_active: true
+        },{
+            is_active:false
+        })
+        console.log(true)
+        console.log(result)
+        if (!result) {
+            throw new Error('Invalid request')
+        }
+
+        res.status(200).send(`<html>
+                                        <script>
+                                            function formsubmitted(e){
+                                                e.preventDefault();
+                                                console.log('called')
+                                            }
+                                        </script>
     
-//                                         <form action="/password/updatepassword/${id}" method="get">
-//                                             <label for="newpassword">Enter New password</label>
-//                                             <input name="newpassword" type="password" required></input>
-//                                             <button>reset password</button>
-//                                         </form>
-//                                     </html>`
-//         )
-//         res.end()
-//     }
-//     catch (error) {
-//         res.status(400).json({ message: 'Request expired' })
-//     }
-// }
+                                        <form action="/user/update-password/${id}" method="get">
+                                            <label for="newpassword">Enter New password</label>
+                                            <input name="newpassword" type="password" required></input>
+                                            <button>reset password</button>
+                                        </form>
+                                    </html>`
+        )
+        res.end()
+    }
+    catch (error) {
+        res.status(400).json({ success: false, message: 'Invalid request' })
+    }
+}
 
 
 
-// exports.updatePassword = async (req, res, next) => {
-//     try {
-//         const { newpassword } = req.query;
-//         const { resetpasswordid } = req.params;
-//         const t = await Sequelize.transaction()
-//         const request = await ForgotPwdReq.findAll({ where: { id: resetpasswordid } })
-//         const user = await Users.findAll({ where: { id: request[0].userId } })
-//         const saltrounds = 10
-//         bcrypt.hash(newpassword, saltrounds, async (err, hash) => {
-//             console.log(err, 'this is erropr')
-//             await Users.update({
-//                 password: hash
-//             }, {
-//                 where: { id: request[0].userId },
-//                 transaction: t
-//             })
-//             t.commit()
-//             res.status(201).json({ message: 'Successfuly update the new password' })
-//         })
-//     }
-//     catch (error) {
-//         res.status(400).json({ message: 'Could not change password' })
-//     }
-// }
+exports.updatePassword = async (req, res, next) => {
+    try {
+        const { newpassword } = req.query;
+        const { resetpasswordid } = req.params;
+
+        const request = await ForgotPwdReq.findById(resetpasswordid)
+        const user = await User.findById(request.user_id)
+        const saltrounds = Number(process.env.SALT_ROUNDS)
+
+        bcrypt.hash(newpassword, saltrounds, async (err, hash) => {
+            if (err) {
+                console.log(err, 'this is erropr')
+                throw new Error('Could not change password')
+            }
+
+            await User.findByIdAndUpdate(user._id, {
+                password: hash
+            }, { new: true })
+            res.status(201).json({ success: true, message: 'Successfuly update the new password' })
+        })
+    }
+    catch (error) {
+        res.status(400).json({ success: false, message: 'Could not change password' })
+    }
+}
 
 
 

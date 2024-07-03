@@ -35,7 +35,7 @@ async function loginAccount(e) {
     } 
     catch (error) {
         const err = error.response.data.message
-        console.log(err)
+        console.error(err)
         displayMessage(err)
     }
 }

@@ -19,7 +19,7 @@ exports.postExpense = async (req, res, next) => {
         const user = await User.findById(_id)
         if (!user) return res.status(404).json({ success: false, message: 'user not found' })
 
-        if (type == 'income') {
+        if (type == 'INCOME') {
             user.total_expense = Number(user.total_expense) + Number(money);
         }
         else {
@@ -47,7 +47,6 @@ exports.getExpense = async (req, res, next) => {
             .skip((page - 1) * LIMIT_PER_PAGE)
             .limit(LIMIT_PER_PAGE)
             .sort({ _id: -1 })
-
         res.status(200).json({
             expenses: expenses,
             currentPage: page,
@@ -65,34 +64,29 @@ exports.getExpense = async (req, res, next) => {
 }
 
 
-// exports.deleteExpense = async (req, res, next) => {
-//     try {
-//         const t = await Sequelize.transaction()
-//         const id = req.params.id
-//         const userId = req.user.dataValues.id
-//         const expense = await Expenses.findAll({ where: { id } })
-//         const user = await Users.findByPk(userId)
-//         if (expense[0].type == 'income') {
-//             user.totalExpense = Number(user.totalExpense) - Number(expense[0].money);
-//         }
-//         else {
-//             user.totalExpense = Number(user.totalExpense) + Number(expense[0].money);
-//         }
-//         await Users.update({
-//             totalExpense: user.totalExpense
-//         }, {
-//             where: { id: userId },
-//             transaction: t
-//         })
+exports.deleteExpense = async (req, res, next) => {
+    try {
+        console.log(true)
+        const { id } = req.params
+        const { _id } = req.user
 
-//         await Expenses.destroy({ where: { id, userId }, transaction: t })
-//         t.commit()
-//         res.status(200).json('Deleted successfully')
-//     }
-//     catch (error) {
-//         t.rollback()
-//         res.status(401).json(error)
-//     }
-// }
+        const expense = await Expense.findById(id)
+        const user = await User.findById(_id)
+        if (expense.type == 'INCOME') {
+            user.total_expense = Number(user.total_expense) - Number(expense.money);
+        }
+        else {
+            user.total_expense = Number(user.total_expense) + Number(expense.money);
+        }
+        await user.save()
+        await expense.deleteOne({_id:id})
+
+        res.status(200).json({ success: true, message: 'Deleted successfully' })
+    }
+    catch (error) {
+        console.log(error)
+        res.status(401).json({ success: false, message: `Couldn't delete expense` })
+    }
+}
 
 

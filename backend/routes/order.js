@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router()
 
 const authenticationMiddleware = require('../middlewares/authenticate')
-const orderController = require('../controllers/orderController')
+const orderController = require('../controllers/order')
 
 
 router.get('/buy-premium', authenticationMiddleware.authenticate, orderController.getPurchasePremium)

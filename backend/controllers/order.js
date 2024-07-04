@@ -1,4 +1,4 @@
-const Orders = require('../models/order')
+const Order = require('../models/order')
 const Razorpay = require('razorpay')
 
 exports.getPurchasePremium = async (req, res, next) => {
@@ -13,7 +13,12 @@ exports.getPurchasePremium = async (req, res, next) => {
             if (err) {
                 throw new Error(JSON.stringify(err))
             }
-            await req.user.createOrder({ orderId: order.id, status: 'PENDING' })
+            const instance = new Order({
+                order_id: order.id,
+                status: 'PENDING',
+                user_id: req.user._id
+            })
+            const newOrder = await instance.save()
             return res.status(201).json({ order, key_id: rzp.key_id })
         })
     }
@@ -25,23 +30,24 @@ exports.getPurchasePremium = async (req, res, next) => {
 
 exports.postUpdateTransactionStatus = async (req, res, next) => {
     try {
-        const { orderId, paymentId, success } = req.body
-        console.log(orderId, paymentId)
-        let order = await Orders.findOne({ where: { orderId } })
-        if (success == true) {
-            let promise1 = order.update({ paymentId: paymentId, status: 'SUCCESSFUL' })
-            let promise2 = req.user.update({ isPremium: true })
-            
-            Promise.all([promise1,promise2])
-                .then(()=>{
+        const { order_id, payment_id, success } = req.body
+        console.log(order_id, payment_id)
+        console.log(req.body)
+        const order = await Order.findOne({ order_id })
+        if (success === true) {
+            const promise1 = order.updateOne({ $set: { payment_id: payment_id, status: 'SUCCESSFUL' } })
+            const promise2 = req.user.updateOne({ $set: { premium: true } })
+
+            Promise.all([promise1, promise2])
+                .then(() => {
                     return res.status(200).json({ success: true, message: 'Transaction successful' })
                 })
-                .catch((error)=>{
+                .catch((error) => {
                     throw new Error(error)
                 })
         }
         else {
-            await order.update({ paymentId: paymentId, status: 'FAILED' })
+            await order.update({ payment_id: payment_id, status: 'FAILED' })
             return res.status(400).json({ success: false, message: 'Transaction failed' })
         }
 

@@ -6,7 +6,7 @@ const expenseController = require('../controllers/expense')
 
 router.post('/add-record', authenticationMiddleware.authenticate, expenseController.postExpense)
 router.get('/get-record', authenticationMiddleware.authenticate ,expenseController.getExpense)
-// router.delete('/delete-record/:id', authenticationMiddleware.authenticate, expenseController.deleteExpense)
+router.delete('/delete-record/:id', authenticationMiddleware.authenticate, expenseController.deleteExpense)
 
 
 module.exports = router

@@ -8,13 +8,10 @@ let resultsNo = document.getElementById('resultsNo')
 
 expenseForm.addEventListener('submit', addRecord)
 incomeForm.addEventListener('submit', addRecord)
-// list.addEventListener('click', deleteExpense)
+list.addEventListener('click', deleteExpense)
 recordExpenseButton.addEventListener('click', recordExpense)
 recordIncomeButton.addEventListener('click', recordIncome)
 resultsNo.addEventListener('change', changePageResults)
-window.addEventListener('DOMContentLoaded', () => {
-    populateExpenses(); // Call only once on initial load
-  })
 window.addEventListener('DOMContentLoaded', recordExpense)
 window.addEventListener('DOMContentLoaded', changePageResults)
 
@@ -52,12 +49,12 @@ async function addRecord(e) {
         money = document.getElementById('income-form').money
         description = document.getElementById('income-form').description
         category = document.getElementById('income-form').category
-        type = 'income'
+        type = 'INCOME'
     } else {
         money = document.getElementById('money')
         description = document.getElementById('description')
         category = document.getElementById('category')
-        type = 'expense'
+        type = 'EXPENSE'
     }
 
     if (!money.value || !description.value || !category.value) {
@@ -90,7 +87,7 @@ async function addRecord(e) {
 function showExpenses(obj) {
     let li = document.createElement('li')
     li.innerHTML = `${obj.type} ${obj.money}  ${obj.description}  ${obj.category}   <button class="delete">Delete</button>`
-    li.id = obj.id
+    li.id = obj._id.toString()
     list.appendChild(li)
 }
 
@@ -115,6 +112,7 @@ function changePageResults() {
 
 // generates all expenses on loading the page
 async function populateExpenses(pages) {
+    console.log(true)
     let page = 1
     if (pages) {
         page = pages
@@ -191,7 +189,8 @@ async function showPagination({
 // deletes a selected expense
 async function deleteExpense(e) {
     if (e.target.classList.contains('delete')) {
-        let target = e.target.parentElement
+        console.log(false)
+        const target = e.target.parentElement
         console.log(target.id)
         await axios.delete(`${URL}/expense/delete-record/${target.id}`, { headers: { 'Authorization': token } })
         target.remove()
@@ -202,38 +201,41 @@ async function deleteExpense(e) {
 
 
 
-// // Razorpay code
-// buyPremiumButton.onclick = async function (e) {
-//     let response = await axios.get(`${URL}/order/buy-premium`, { headers: { 'Authorization': token } })
-//     let options = {
-//         "key": response.data.key_id, // Enter the Key ID generated from the Dashboard
-//         "order_id": response.data.order.id,
-//         "handler": async function (response) {
-//             console.log('Handler executed')
-//             await axios.post(`${URL}/order/update-transaction-status`, {
-//                 orderId: options.order_id,
-//                 paymentId: response.razorpay_payment_id,
-//                 success: true
-//             }, {
-//                 headers: { 'Authorization': token }
-//             })
-//             alert('Payment successful')
-//             window.location.href = window.location.href
-//         }
-//     };
-//     let rzp1 = new Razorpay(options);
-//     rzp1.open();
-//     e.preventDefault();
+// Razorpay code
+buyPremiumButton.onclick = async function (e) {
+    const response = await axios.get(`${URL}/order/buy-premium`, { headers: { 'Authorization': token } })
+    console.log(response)
+    const options = {
+        "key": response.data.key_id, // Enter the Key ID generated from the Dashboard
+        "order_id": response.data.order.id,
+        "handler": async function (response) {
+            console.log('Handler executed')
+            console.log(response)
+            console.log(options)
+            await axios.post(`${URL}/order/update-transaction-status`, {
+                order_id: options.order_id,
+                payment_id: response.razorpay_payment_id,
+                success: true
+            }, {
+                headers: { 'Authorization': token }
+            })
+            alert('Payment successful')
+            window.location.href = window.location.href
+        }
+    };
+    let rzp1 = new Razorpay(options);
+    rzp1.open();
+    e.preventDefault();
 
-//     rzp1.on('payment.failed', async function (response) {
-//         console.log('Failed executed')
-//         await axios.post(`${URL}/order/update-transaction-status`, {
-//             orderId: options.order_id,
-//             paymentId: response.razorpay_payment_id,
-//             success: false
-//         }, {
-//             headers: { 'Authorization': token }
-//         })
-//         alert('Something went wrong')
-//     })
-// }
+    rzp1.on('payment.failed', async function (response) {
+        console.log('Failed executed')
+        await axios.post(`${URL}/order/update-transaction-status`, {
+            order_id: options.order_id,
+            payment_id: response.razorpay_payment_id,
+            success: false
+        }, {
+            headers: { 'Authorization': token }
+        })
+        alert('Something went wrong')
+    })
+}

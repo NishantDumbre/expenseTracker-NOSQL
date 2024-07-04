@@ -1,31 +1,29 @@
-const Users = require('../models/user')
-const Expenses = require('../models/expense')
-const Sequelize = require('sequelize')
-const sequelize = require('../utils/database')
-// const fs = require('fs').promises
-// const path = require('path')
+const User = require('../models/user')
+const Expense = require('../models/expense')
 const S3Services = require('../services/S3Services')
 const DownloadURLs = require('../models/download-URL')
 
 
 exports.getUserLeaderboard = async (req, res, next) => {
     try {
-        const users = await Users.findAll({
-            attributes: ['id', 'username', 'totalExpense']
-        })
-
+        const users = await User.find({}, ['username', 'total_expense'])
+        console.log(users)
         res.status(200).json(users)
 
     }
     catch (error) {
-        res.status(400).json({message:'Something went wrong', err:error})
+        res.status(400).json({ message: 'Something went wrong', err: error })
     }
 }
 
 
 
 exports.getDownloadExpenseList = async (req, res, next) => {
+    // earlier implementation by saving files on the server
+
     // try {
+    // const fs = require('fs').promises
+    // const path = require('path')
     //     console.log(req.user.id)
     //     const user = await Users.findAll({where:{id:req.user.id}})
     //     const result = await Expenses.findAll({where:{userId:req.user.id}})
@@ -49,34 +47,37 @@ exports.getDownloadExpenseList = async (req, res, next) => {
     // }
 
     try {
-        const expenses = await req.user.getExpenses()
+        //const expenses = await req.user.getExpenses()
+        const { _id } = req.user
+        const expenses = await Expense.find({ user_id: _id }, { money: 1, description: 1, category: 1, _id: 0 })
+        console.log(expenses)
         const stringifiedData = JSON.stringify(expenses)
-        const id = req.user.id
-        const fileName = `expenses${id}/${new Date()}.txt`
+        const fileName = `expenses${_id.toString()}/${new Date()}.txt`
+
         const fileURL = await S3Services.uploadToS3(stringifiedData, fileName)
         DownloadURLs.create({
-            url:fileURL.Location,
-            date:new Date(),
-            userId: req.user.id
+            url: fileURL.Location,
+            date: new Date(),
+            user_id: _id.toString()
         })
         console.log(fileURL.Location)
         res.json(fileURL.Location)
     }
     catch (error) {
-        res.status(500).json({fileURL:'', success:false, err:error})
+        res.status(500).json({ fileURL: '', success: false, err: error })
     }
 }
 
 
-exports.getDownloadUrls = async(req,res,next) =>{
+exports.getDownloadUrls = async (req, res, next) => {
     try {
-        const urls = await DownloadURLs.findAll({where:{userId:req.user.id}})
+        console.log(true)
+        const urls = await DownloadURLs.find({ user_id: req.user._id }, { url: 1, date: 1, _id: 0 })
+
         console.log(urls)
-        res.status(200).json({data:urls, success:true})    
-    } 
-    catch (error) {
-        res.status(500).json({success:false})    
+        res.status(200).json({ data: urls, success: true })
     }
-
-
+    catch (error) {
+        res.status(500).json({ success: false })
+    }
 }

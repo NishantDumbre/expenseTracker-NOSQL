@@ -10,8 +10,8 @@ const DownloadURL = new Schema({
         type: Date,
         required: true
     },
-    userId:{
-        type: Number,
+    user_id:{
+        type: String,
         required: true
     }
 })

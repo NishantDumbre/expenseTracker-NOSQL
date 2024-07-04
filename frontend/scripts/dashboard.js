@@ -220,7 +220,7 @@ buyPremiumButton.onclick = async function (e) {
                 headers: { 'Authorization': token }
             })
             alert('Payment successful')
-            window.location.href = window.location.href
+            window.location.reload();
         }
     };
     let rzp1 = new Razorpay(options);

@@ -94,15 +94,16 @@ exports.login = async (req, res, next) => {
 
 
 
-// exports.getCheckPremium = async (req, res, next) => {
-//     try {
-//         let user = await Users.findAll({ where: { id: req.user.dataValues.id } })
-//         res.json({ isPremium: user[0].dataValues.isPremium })
-//     }
-//     catch (error) {
-//         res.status(400).json('Something went wrong')
-//     }
-// }
+exports.getCheckPremium = async (req, res, next) => {
+    try {
+        const {_id} = req.user
+        const user = await User.findById(_id)
+        res.json({ premium: user.premium })
+    }
+    catch (error) {
+        res.status(400).json('Something went wrong')
+    }
+}
 
 
 

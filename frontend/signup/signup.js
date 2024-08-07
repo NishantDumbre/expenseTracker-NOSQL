@@ -7,7 +7,7 @@ let login = document.getElementsByClassName('login')[0]
 
 signup.addEventListener('submit', createAccount)
 
-const URL = `https://expense-tracker-nosql-phi.vercel.app`
+const URL = `https://expense-tracker-nosql-e1t1rdlux-nishantdumbres-projects.vercel.app`
 
 
 async function createAccount(e) {

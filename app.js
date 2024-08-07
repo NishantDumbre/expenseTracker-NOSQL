@@ -37,7 +37,9 @@ app.use(routes)
 
 app.use((req,res)=>{
     console.log('url', req.url)
-    
+    if(req.url == '/'){
+        req.url = 'login/login.html'
+    }
     res.sendFile(path.join(__dirname,`frontend/${req.url}`))
 })
 

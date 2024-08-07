@@ -38,11 +38,12 @@ async function createAccount(e) {
         password: password.value,
         name: name.value
     }
+    console.log(true)
     try {
         await axios.post(`${URL}/user/signup`, obj)
         console.log('Account created successfully')
         await displayMessage('Account created successfully')
-        window.location.href = './login.html'
+        window.location.href = '../login/login.html'
     } 
     catch (error) {
         await displayMessage('Error creating account')

@@ -31,7 +31,7 @@ function displayMessage(text) {
     setTimeout(() => {
         message.remove()
         if (text !== 'Email not found') {
-            window.location.href = './login.html'
+            window.location.href = '../login/login.html'
         }
     }, 3000)
 }

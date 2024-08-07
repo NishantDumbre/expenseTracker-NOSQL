@@ -11,7 +11,7 @@ const URL = 'http://localhost:8080'
 
 function goToLogin(e) {
     e.preventDefault()
-    window.location.href = '../views/signup.html'
+    window.location.href = '../signup/signup.html'
 }
 
 
@@ -30,7 +30,7 @@ async function loginAccount(e) {
     try {
         const result = await axios.post(`${URL}/user/login`, obj)
         localStorage.setItem('token', result.data.token)
-        window.location.href = '../views/dashboard.html';
+        window.location.href = '../dashboard/dashboard.html';
 
     } 
     catch (error) {

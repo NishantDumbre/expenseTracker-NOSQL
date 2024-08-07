@@ -16,10 +16,10 @@ function generateToken(id, name) {
 exports.createUser = (req, res, next) => {
     try {
         const { username, password, email, name } = req.body
-        const saltrounds = process.env.SALT_ROUNDS
+        const saltrounds = process.env.SALT_ROUNDS.parseInt()
         bcrypt.hash(password, saltrounds, async (err, hash) => {
             if (err) {
-                throw new Error('Something went wrong')
+                throw new Error(err)
             }
             const instance = new User({
                 name,

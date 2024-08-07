@@ -18,7 +18,14 @@ const routes = require('./backend/routes/routes')
 const accessLogStream = fs.createWriteStream(path.join(__dirname, 'access.log'), { flags: 'a' })
 
 
-app.use(helmet())
+app.use(helmet({
+    contentSecurityPolicy: {
+      directives: {
+        'script-src': ["'self'", 'https://cdn.jsdelivr.net/npm/axios/dist/'],
+      }
+    }
+  }));
+
 app.use(compression())
 app.use(morgan('combined', { stream: accessLogStream }))
 
@@ -28,17 +35,11 @@ app.use(bodyParser.json());
 app.use(routes)
 
 
-
-app.get('/',(req,res)=>{
-    console.log('url for 1sts', req.url)
-    res.sendFile(path.join(__dirname,`frontend/views/login.html`))
-})
-
 app.use((req,res)=>{
     console.log('url', req.url)
+    
     res.sendFile(path.join(__dirname,`frontend/${req.url}`))
 })
-
 
 
 mongoose.connect(process.env.MONGO_DB)

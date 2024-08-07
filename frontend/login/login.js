@@ -6,7 +6,7 @@ let signup = document.getElementById('signup-button')
 signup.addEventListener('click', goToLogin)
 login.addEventListener('submit', loginAccount)
 
-const URL = 'http://localhost:8080'
+const URL = `https://expense-tracker-nosql-phi.vercel.app`
 
 
 function goToLogin(e) {

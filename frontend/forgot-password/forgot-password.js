@@ -4,6 +4,8 @@ let signup = document.getElementById('forgot-password-form')
 
 signup.addEventListener('submit', sendEmail)
 
+const URL = `https://expense-tracker-nosql-phi.vercel.app`
+
 async function sendEmail(e) {
     e.preventDefault()
 
@@ -13,7 +15,7 @@ async function sendEmail(e) {
 
     try {
         console.log(true)
-        const result = await axios.post('http://localhost:8080/user/forgot-password', obj)
+        const result = await axios.post(`${URL}/user/forgot-password`, obj)
         console.log(result)
         displayMessage('Email sent. Redirecting to login page')
     } catch (error) {

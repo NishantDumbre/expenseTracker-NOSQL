@@ -16,7 +16,7 @@ window.addEventListener('DOMContentLoaded', recordExpense)
 window.addEventListener('DOMContentLoaded', changePageResults)
 
 
-const URL = `https://expense-tracker-nosql-phi.vercel.app`
+const URL = `https://expensetracker-nosql.onrender.com`
 const token = localStorage.getItem('token')
 
 // Enables expense form and disables income form

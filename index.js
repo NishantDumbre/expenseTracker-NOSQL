@@ -31,7 +31,11 @@ const accessLogStream = fs.createWriteStream(path.join(__dirname, 'access.log'),
 app.use(compression())
 app.use(morgan('combined', { stream: accessLogStream }))
 
-app.use(cors());
+app.use(cors({
+  origin: '*',
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  credentials: true,
+}));
 app.use(bodyParser.json());
 
 app.use(express.static(__dirname + "/public"))

@@ -3,19 +3,13 @@ body {
     margin: 0;
     padding: 0;
     background-color: #f8f9fa;
-}
-
-.container {
+    width:100vw;
+    height:100vh;
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
 }
 
-.left,
-.right {
-    flex: 1;
-}
 
 .form-container {
     background-color: #ffffff;
@@ -23,16 +17,18 @@ body {
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
     padding: 40px;
     max-width: 400px;
+    width: 100%;
+    box-sizing: border-box;
+    text-align: center;
 }
 
-.logo {
-    text-align: center;
+.logo-container {
     margin-bottom: 20px;
 }
 
-.logo h1 {
-    color: #007bff;
-    font-size: 24px;
+.logo{
+    height: 60px;
+    width: 60px
 }
 
 .login {
@@ -73,8 +69,10 @@ body {
 }
 
 .btn-div {
+    margin-top: 15px;
+    width: 100%;
     display: flex;
-    justify-content: space-between;
+    justify-content: space-around;
 }
 
 .login-button {

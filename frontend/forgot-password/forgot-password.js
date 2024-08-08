@@ -4,7 +4,7 @@ let signup = document.getElementById('forgot-password-form')
 
 signup.addEventListener('submit', sendEmail)
 
-const URL = `expense-tracker-nosql-phi.vercel.app`
+const URL = `https://expense-tracker-nosql-phi.vercel.app`
 
 async function sendEmail(e) {
     e.preventDefault()

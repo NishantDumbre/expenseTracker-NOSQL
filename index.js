@@ -15,7 +15,7 @@ const app = express()
 
 const routes = require('./routes/routes')
 
-const accessLogStream = fs.createWriteStream(path.join(__dirname, 'access.log'), { flags: 'a' })
+//const accessLogStream = fs.createWriteStream(path.join(__dirname, 'access.log'), { flags: 'a' })
 
 
 // app.use(helmet({

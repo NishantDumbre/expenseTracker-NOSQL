@@ -28,7 +28,7 @@ const routes = require('./routes/routes')
 
 
 
-app.use(compression())
+app.use(compression()) 
 app.use(morgan('combined', { stream: accessLogStream }))
 
 app.use(cors({

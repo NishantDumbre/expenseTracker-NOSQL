@@ -29,7 +29,9 @@ app.use(helmet({
 app.use(compression())
 app.use(morgan('combined', { stream: accessLogStream }))
 
-app.use(cors())
+app.use(cors({
+  origin: 'https://expense-tracker-nosql-1jixs6cdd-nishantdumbres-projects.vercel.app' // Replace with your frontend URL
+}));
 app.use(bodyParser.json());
 
 app.use(routes)

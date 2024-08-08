@@ -34,6 +34,8 @@ app.use(morgan('combined', { stream: accessLogStream }))
 app.use(cors());
 app.use(bodyParser.json());
 
+app.use(express.static(__dirname + "/public"))
+
 app.use(routes)
 
 
@@ -45,8 +47,6 @@ app.use(routes)
 //     res.sendFile(path.join(__dirname,`public/${req.url}`))
 // })
 
-
-app.use(express.static(__dirname + "/public"))
 
 
 mongoose.connect(process.env.MONGO_DB)

@@ -30,7 +30,9 @@ app.use(compression())
 app.use(morgan('combined', { stream: accessLogStream }))
 
 app.use(cors({
-  origin: 'https://expense-tracker-nosql-1jixs6cdd-nishantdumbres-projects.vercel.app' // Replace with your frontend URL
+  origin: 'https://expense-tracker-nosql-1jixs6cdd-nishantdumbres-projects.vercel.app', 
+  credentials: true, 
+  allowedHeaders: ['X-CSRF-Token', 'X-Requested-With', 'Accept', 'Accept-Version', 'Content-Length', 'Content-MD5', 'Content-Type', 'Date', 'X-Api-Version', 'Authorization']   
 }));
 app.use(bodyParser.json());
 

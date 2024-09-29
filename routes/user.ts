@@ -14,4 +14,4 @@ router.get('/update-password/:resetpasswordid', userController.updatePassword)
 router.get('/check-premium', authenticate, userController.getCheckPremium)
 
 
-module.exports = router
+export default router

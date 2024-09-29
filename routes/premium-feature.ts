@@ -1,12 +1,15 @@
 import express, { Router } from "express";
 import authenticate from "../middlewares/authenticate";
-import premiumFeatures = require('../controllers/premium-feature')
+import {
+  getUserLeaderboard,
+  getDownloadExpenseList,
+  getDownloadUrls,
+} from "../controllers/premium-feature";
 
 const router: Router = express.Router();
 
-router.get('/leaderboard', authenticate, premiumFeatures.getUserLeaderboard)
-router.get('/downloadExpenseList', authenticate, premiumFeatures.getDownloadExpenseList)
-router.get('/downloadUrlList', authenticate, premiumFeatures.getDownloadUrls)
+router.get("/leaderboard", authenticate, getUserLeaderboard);
+router.get("/downloadExpenseList", authenticate, getDownloadExpenseList);
+router.get("/downloadUrlList", authenticate, getDownloadUrls);
 
-
-module.exports = router
+export default router;

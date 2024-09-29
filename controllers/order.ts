@@ -1,11 +1,20 @@
-const Order = require('../models/order')
-const Razorpay = require('razorpay')
+import { Request, Response, NextFunction } from "express";
+import Order from '../models/order'
+import Razorpay from 'razorpay'
 
-exports.getPurchasePremium = async (req, res, next) => {
+interface AuthenticatedRequest extends Request {
+    user?: any
+  }
+
+export const getPurchasePremium = async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
     try {
         const rzp = new Razorpay({
-            key_id: process.env.RAZORPAY_KEYID,
-            key_secret: process.env.RAZORPAY_KEYSECRET
+            key_id: process.env.RAZORPAY_KEYID as string,
+            key_secret: process.env.RAZORPAY_KEYSECRET as string
         })
 
         const amount = 2500
@@ -16,26 +25,30 @@ exports.getPurchasePremium = async (req, res, next) => {
             const instance = new Order({
                 order_id: order.id,
                 status: 'PENDING',
-                user_id: req.user._id
+                user_id: req.user!._id
             })
             const newOrder = await instance.save()
             return res.status(201).json({ order, key_id: rzp.key_id })
         })
     }
     catch (error) {
-        res.status(401).JSON({ message: 'Something went wrong', error })
+        res.status(401).json({ message: 'Something went wrong', error })
     }
 }
 
 
-exports.postUpdateTransactionStatus = async (req, res, next) => {
+export const postUpdateTransactionStatus = async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
     try {
         const { order_id, payment_id, success } = req.body
         console.log(order_id, payment_id)
         console.log(req.body)
         const order = await Order.findOne({ order_id })
         if (success === true) {
-            const promise1 = order.updateOne({ $set: { payment_id: payment_id, status: 'SUCCESSFUL' } })
+            const promise1 = order!.updateOne({ $set: { payment_id: payment_id, status: 'SUCCESSFUL' } })
             const promise2 = req.user.updateOne({ $set: { premium: true } })
 
             Promise.all([promise1, promise2])
@@ -47,7 +60,7 @@ exports.postUpdateTransactionStatus = async (req, res, next) => {
                 })
         }
         else {
-            await order.update({ payment_id: payment_id, status: 'FAILED' })
+            await order!.updateOne({ payment_id: payment_id, status: 'FAILED' })
             return res.status(400).json({ success: false, message: 'Transaction failed' })
         }
 

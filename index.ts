@@ -13,7 +13,7 @@ require('dotenv').config()
 
 const app = express()
 
-import routes = require('./routes/routes')
+import routes from './routes/routes'
 
 const accessLogStream = fs.createWriteStream(path.join(__dirname, 'access.log'), { flags: 'a' })
 

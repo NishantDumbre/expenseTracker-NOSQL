@@ -1,10 +1,19 @@
+import { Request, Response, NextFunction } from "express";
 const User = require('../models/user')
 const Expense = require('../models/expense')
 const S3Services = require('../services/S3Services')
 const DownloadURLs = require('../models/download-URL')
 
+interface AuthenticatedRequest extends Request {
+    user?: any
+  }
 
-exports.getUserLeaderboard = async (req, res, next) => {
+
+  export const getUserLeaderboard = async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
     try {
         const users = await User.find({}, ['username', 'total_expense'])
         console.log(users)
@@ -18,7 +27,11 @@ exports.getUserLeaderboard = async (req, res, next) => {
 
 
 
-exports.getDownloadExpenseList = async (req, res, next) => {
+export const getDownloadExpenseList = async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
     // earlier implementation by saving files on the server
 
     // try {
@@ -69,7 +82,11 @@ exports.getDownloadExpenseList = async (req, res, next) => {
 }
 
 
-exports.getDownloadUrls = async (req, res, next) => {
+export const getDownloadUrls = async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
     try {
         console.log(true)
         const urls = await DownloadURLs.find({ user_id: req.user._id }, { url: 1, date: 1, _id: 0 })

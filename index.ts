@@ -1,19 +1,19 @@
 
-const express = require('express')
-const bodyParser = require('body-parser')
-const cors = require('cors')
+import express = require('express')
+import bodyParser = require('body-parser')
+import cors = require('cors')
 
-const mongoose = require('mongoose')
-const helmet = require('helmet')
-const compression = require('compression')
-const morgan = require('morgan')
-const fs = require('fs')
-const path = require('path')
+import mongoose = require('mongoose')
+import helmet = require('helmet')
+import compression = require('compression')
+import morgan = require('morgan')
+import fs = require('fs')
+import path = require('path')
 require('dotenv').config()
 
 const app = express()
 
-const routes = require('./routes/routes')
+import routes = require('./routes/routes')
 
 const accessLogStream = fs.createWriteStream(path.join(__dirname, 'access.log'), { flags: 'a' })
 
@@ -53,7 +53,7 @@ app.use(routes)
 
 
 
-mongoose.connect(process.env.MONGO_DB)
+mongoose.connect(process.env.MONGO_DB as string)
     .then(() => {
         app.listen(8080)
     })

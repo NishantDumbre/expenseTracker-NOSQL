@@ -1,8 +1,9 @@
-const express = require('express');
-const router = express.Router()
+import express, {Router} from 'express';
+import authenticationMiddleware = require('../middlewares/authenticate')
+import expenseController = require('../controllers/expense')
 
-const authenticationMiddleware = require('../middlewares/authenticate')
-const expenseController = require('../controllers/expense')
+
+const router: Router = express.Router()
 
 router.post('/add-record', authenticationMiddleware.authenticate, expenseController.postExpense)
 router.get('/get-record', authenticationMiddleware.authenticate ,expenseController.getExpense)

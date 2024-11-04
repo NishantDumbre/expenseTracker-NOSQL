@@ -2,13 +2,12 @@ const mongoose = require('mongoose')
 const { Schema } = mongoose 
 
 const User = new Schema({
-  username: {
-    type: String, 
-    required: true
-  },
+  // username: {
+  //   type: String, 
+  //   required: true
+  // },
   name: {
     type: String,
-    required: true
   },
   password: {
     type: String,
@@ -19,7 +18,14 @@ const User = new Schema({
     required: true,
     unique: true 
   },
+  profileUrl:{
+    type:String,
+  },
   premium: {
+    type: Boolean,
+    default: false
+  },
+  verified:{
     type: Boolean,
     default: false
   },

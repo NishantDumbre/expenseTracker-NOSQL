@@ -6,6 +6,10 @@ const Expense = new Schema({
         type: Number,
         required: true
     },
+    title: {
+        type: String,
+        required: true,
+    },
     description: {
         type: String,
         required: true,
@@ -14,15 +18,19 @@ const Expense = new Schema({
         type: String,
         required: true,
     },
-    user_id:{
+    user_id: {
         type: String,
         required: true,
     },
-    type:{
+    type: {
         type: String,
         required: true,
+    },
+    date: {
+        type: Date,
+        required: true
     }
-    
+
 })
 
 module.exports = mongoose.model('expense', Expense)

@@ -272,6 +272,6 @@ exports.verifyUserEmail = async (req, res, next) => {
 
 
 exports.getUserData = async (req, res, next) => {
-    const { name, email, profileUrl, verified, premium } = req.user
-    res.status(200).json({ name, email, profileUrl, verified, premium })
+    const { verified, premium, name, email, profileUrl } = req.user.toObject()
+    res.status(200).json({ verified, premium, name, email, profileUrl })
 }

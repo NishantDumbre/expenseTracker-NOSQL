@@ -20,21 +20,22 @@ exports.postExpense = async (req, res, next) => {
             category: category.toUpperCase(),
             date
         });
-        const newExpense = await instance.save();
+        const newExpensePromise = instance.save();
+        const userPromise = User.findById(_id);
 
-        // Fetch the user from the database
-        const user = await User.findById(_id);
+        const [newExpense, user] = await Promise.all([
+            newExpensePromise,
+            userPromise
+        ])
+
         if (!user) return res.status(404).json({ success: false, message: 'User not found' });
 
-        // Build the dynamic property name
         const propertyName = `total_${type.toLowerCase()}_${category.toLowerCase()}`;
 
-        // Initialize the property if it doesn't exist to prevent NaN issues
         if (typeof user[propertyName] === 'undefined') {
             user[propertyName] = 0;
         }
 
-        // Update the user's balance and specific category total
         if (type.toUpperCase() === 'INCOME') {
             user.total_balance += Number(money);
             if (user.highest_income_value < Number(money)) {
@@ -106,22 +107,49 @@ exports.getExpense = async (req, res, next) => {
 
 exports.deleteExpense = async (req, res, next) => {
     try {
-        console.log(true)
         const { id } = req.params
         const { _id } = req.user
 
-        const expense = await Expense.findById(id)
-        const user = await User.findById(_id)
-        if (expense.type == 'INCOME') {
-            user.total_balance = Number(user.total_balance) - Number(expense.money);
-        }
-        else {
-            user.total_balance = Number(user.total_balance) + Number(expense.money);
-        }
-        await user.save()
-        await expense.deleteOne({ _id: id })
+        const expensePromise = Expense.findById(id)
+        const userPromise = User.findById(_id)
+        const [expense, user] = await Promise.all([
+            expensePromise,
+            userPromise
+        ])
 
-        res.status(200).json({ success: true, message: 'Deleted successfully' })
+        // if (expense.type == 'INCOME') {
+        //     user.total_balance = Number(user.total_balance) - Number(expense.money);
+        // }
+        // else {
+        //     user.total_balance = Number(user.total_balance) + Number(expense.money);
+        // }
+        // await user.save()
+        // await expense.deleteOne({ _id: id })
+
+        const { money, type, category } = expense
+        const propertyName = `total_${type.toLowerCase()}_${category.toLowerCase()}`;
+
+        if (typeof user[propertyName] === 'undefined') {
+            user[propertyName] = 0;
+        }
+
+        if (expense.type === 'INCOME') {
+            user.total_balance -= Number(money);
+            user[propertyName] -= Number(money);
+        } else if (expense.type === 'EXPENSE') {
+            user.total_balance += Number(money);
+            user[propertyName] += Number(money);
+        }
+
+        const [updatedUser] = await Promise.all([
+            user.save(),
+            expense.deleteOne({ _id: id })
+        ])
+
+        const { password, ...userCopy } = updatedUser.toObject();
+
+        // Respond with the updated user object
+        res.status(200).json({ success: true, message: 'Deleted record successfully', data: userCopy });
     }
     catch (error) {
         console.log(error)
